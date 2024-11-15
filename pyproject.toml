@@ -2,6 +2,9 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/pinyin_split"]
+
 [project]
 name = "py-pinyin-split"
 dynamic = ["version"]

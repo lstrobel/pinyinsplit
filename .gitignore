@@ -24,3 +24,7 @@ cover/
 # Virtual environments
 .venv
 .DS_Store
+
+.aider*
+.env
+.ruff_cache

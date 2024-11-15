@@ -1,28 +1,33 @@
-pinyinsplit
-===========
+# pinyin-split
 
-This is a Python library for splitting a Chinese Pinyin phrase into possible 
-permutations of valid Pinyin words.
+A Python library for splitting Chinese Pinyin phrases into possible permutations of valid Pinyin syllables.
 
-Usage
------
+Based originally on [pinyinsplit](https://github.com/throput/pinyinsplit) by [@tomlee](https://github.com/tomlee).
 
-Some examples of using the library are as follows:
+## Installation
 
->>> from pinyinsplit import PinyinSplit
->>> pys = PinyinSplit()
->>> pys.split('XiangGangDaXue')
-[['Xiang', 'Gang', 'Da', 'Xue'], ['Xiang', 'Gang', 'Da', 'Xu', 'e'], ['Xi', 'ang', 'Gang', 'Da', 'Xue'], ['Xi', 'ang', 'Gang', 'Da', 'Xu', 'e']]
->>> pys.split('shediaoyingxiongchuan')
-[['she', 'diao', 'ying', 'xiong', 'chuan'], ['she', 'diao', 'ying', 'xiong', 'chu', 'an'], ['she', 'di', 'ao', 'ying', 'xiong', 'chuan'], ['she', 'di', 'ao', 'ying', 'xiong', 'chu', 'an']]
->>> pys.split('shediaoyingxiongchuanxyz')
+```bash
+pip install pinyin-split
+```
+
+## Usage
+
+```python
+from pinyin_split import split
+
+# Basic usage
+split('xianggangdaxue')
+[['xiang', 'gang', 'da', 'xue'], ['xiang', 'gang', 'da', 'xu', 'e'], 
+ ['xi', 'ang', 'gang', 'da', 'xue'], ['xi', 'ang', 'gang', 'da', 'xu', 'e']]
+
+# Complex example
+split('shediaoyingxiongchuan')
+[['she', 'diao', 'ying', 'xiong', 'chuan'], 
+ ['she', 'diao', 'ying', 'xiong', 'chu', 'an'],
+ ['she', 'di', 'ao', 'ying', 'xiong', 'chuan'],
+ ['she', 'di', 'ao', 'ying', 'xiong', 'chu', 'an']]
+
+# Invalid input returns empty list
+split('shediaoyingxiongchuanxyz')
 []
-
-Installation
-------------
-
-You can install ``pinyinsplit`` as follows:
-
-.. code-block:: sh
-
-   $ pip install pinyinsplit
+```

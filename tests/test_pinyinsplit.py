@@ -1,4 +1,4 @@
-from pinyin_split.pinyinsplit import split
+from pinyin_split import split
 
 
 def test_basic_splits():

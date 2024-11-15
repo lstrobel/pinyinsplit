@@ -1,16 +1,8 @@
-from pygtrie import CharTrie
 import copy
 
-"""
-Split a Chinese Pinyin phrase into a list of possible permutations of Pinyin words.This is the "example" module.
+from pygtrie import CharTrie
 
-For example,
 
->>> from pinyinsplit import PinyinSplit
->>> pys = PinyinSplit()
->>> pys.split('XiangGangDaXue')
-[['Xiang', 'Gang', 'Da', 'Xue'], ['Xiang', 'Gang', 'Da', 'Xu', 'e'], ['Xi', 'ang', 'Gang', 'Da', 'Xue'], ['Xi', 'ang', 'Gang', 'Da', 'Xu', 'e']]
-"""
 class PinyinSplit:
     """Split a Chinese Pinyin phrase into a list of possible permutations of Pinyin words.
 
@@ -106,7 +98,3 @@ class PinyinSplit:
                 else:
                     results.append(words_copy)
         return results
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()

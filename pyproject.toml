@@ -1,0 +1,59 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pinyin-split"
+dynamic = ["version"]
+description = ''
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+keywords = ['chinese', 'pinyin']
+authors = [
+    { name = "Thomas Lee", email = "thomaslee@throput.com" },
+    { name = "lstrobel", email = "mail@lstrobel.com" },
+]
+maintainers = [{ name = "lstrobel", email = "mail@lstrobel.com" }]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    'License :: OSI Approved :: MIT License',
+    'Topic :: Text Processing :: Linguistic',
+]
+dependencies = [
+    "pygtrie>=2.5.0",
+]
+
+[project.urls]
+Documentation = "https://github.com/lstrobel/pinyin-split#readme"
+Issues = "https://github.com/lstrobel/pinyin-split/issues"
+Source = "https://github.com/lstrobel/pinyin-split"
+
+[tool.hatch.version]
+path = "src/pinyin_split/__about__.py"
+
+[tool.hatch.envs.types]
+extra-dependencies = ["mypy>=1.0.0"]
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:src/pinyin_split tests}"
+
+[tool.coverage.run]
+source_pkgs = ["pinyin_split", "tests"]
+branch = true
+parallel = true
+omit = ["src/pinyin_split/__about__.py"]
+
+[tool.coverage.paths]
+pinyin_split = ["src/pinyin_split", "*/pinyin-split/src/pinyin_split"]
+tests = ["tests", "*/pinyin-split/tests"]
+
+[tool.coverage.report]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]

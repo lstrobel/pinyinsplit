@@ -100,66 +100,136 @@ _non_standard_syllables = [
     'cei',
     'sei'
 ]
+
+# Mapping of base vowels to their tone variants
+_tone_marks = {
+    'a': 'āáǎà', 'A': 'ĀÁǍÀ',
+    'e': 'ēéěè', 'E': 'ĒÉĚÈ',
+    'i': 'īíǐì', 'I': 'ĪÍǏÌ',
+    'o': 'ōóǒò', 'O': 'ŌÓǑÒ',
+    'u': 'ūúǔù', 'U': 'ŪÚǓÙ',
+    'ü': 'ǖǘǚǜ', 'Ü': 'ǕǗǙǛ',
+}
 # fmt: on
 
 
+def _add_tone_variants(syllable: str) -> list[str]:
+    """Generate all valid tone variants for a syllable."""
+    variants = [syllable]  # Include toneless variant
+
+    # Find the vowels in the syllable (both upper and lower case)
+    vowels = [c for c in syllable if c.lower() in "aeiouü"]
+    if not vowels:
+        return variants
+
+    # Determine which vowel gets the tone mark
+    tone_vowel = None
+    # Preserve case when finding the tone vowel
+    if any(v.lower() == "a" for v in vowels):
+        tone_vowel = next(v for v in vowels if v.lower() == "a")
+    elif any(v.lower() == "e" for v in vowels):
+        tone_vowel = next(v for v in vowels if v.lower() == "e")
+    elif any(v.lower() == "o" for v in vowels):
+        tone_vowel = next(v for v in vowels if v.lower() == "o")
+    else:
+        tone_vowel = vowels[-1]
+
+    # Generate variants with each tone mark
+    for i in range(4):
+        variant = syllable.replace(tone_vowel, _tone_marks[tone_vowel][i])
+        variants.append(variant)
+
+    return variants
+
+
 def split(phrase: str, include_nonstandard: bool = False) -> List[List[str]]:
-    """Split a pinyin phrase into all possible valid syllable combinations.
+    """Split a pinyin phrase into valid syllable combinations.
+
+    Handles both toned and toneless pinyin input. Punctuation and numbers will not be
+    preserved in the output, but do influence syllable boundaries.
 
     Args:
-        phrase: A string containing pinyin syllables without spaces
+        phrase: A string containing pinyin syllables, optionally with punctuation/numbers
         include_nonstandard: Whether to include nonstandard syllables in matching
 
     Returns:
         A list of lists, where each inner list represents one possible
         way to split the phrase into valid pinyin syllables
     """
-    # Create trie and populate with syllables
     trie = CharTrie()
-    for syllable in _syllables:
-        trie[syllable] = len(syllable)
 
+    # Add standard syllables and their tone variants
+    for syllable in _syllables:
+        for variant in _add_tone_variants(syllable):
+            trie[variant] = len(variant)
+
+    # Add non-standard syllables if requested
     if include_nonstandard:
         for syllable in _non_standard_syllables:
-            trie[syllable] = len(syllable)
+            for variant in _add_tone_variants(syllable):
+                trie[variant] = len(variant)
 
-    # Convert input to lowercase for matching
-    phrase_lower = phrase.lower()
+    # Find positions of punctuation and numbers
+    boundaries = []
+    non_pinyin_chars = []
+    for i, char in enumerate(phrase):
+        if not char.isalpha():
+            boundaries.append(i)
+            non_pinyin_chars.append(char)
 
-    # Stack of (start_pos, accumulated_splits) tuples to process
-    to_process = []
-    valid_splits = []
+    # Split the phrase at boundaries
+    if not boundaries:
+        segments = [phrase]
+    else:
+        segments = []
+        prev = 0
+        for pos in boundaries:
+            if pos > prev:
+                segments.append(phrase[prev:pos])
+            segments.append(phrase[pos : pos + 1])
+            prev = pos + 1
+        if prev < len(phrase):
+            segments.append(phrase[prev:])
 
-    # Initialize processing with starting position
-    if phrase:
-        to_process.append((0, []))
+    # Process each segment
+    result = [[]]
+    for segment in segments:
+        if not segment.isalpha():
+            # Skip non-pinyin characters
+            continue
 
-    while to_process:
-        # Get next position to process
-        start_pos, split_points = to_process.pop()
+        # Process pinyin segment
+        to_process = [(0, [])]
+        segment_splits = []
 
-        # Get remaining text to process
-        current_lower = phrase_lower[start_pos:]
+        while to_process:
+            start_pos, split_points = to_process.pop()
+            current = segment[start_pos:].lower()
 
-        # Find all valid pinyin prefixes
-        prefix_matches = trie.prefixes(current_lower)
+            prefix_matches = trie.prefixes(current)
 
-        for _, length in prefix_matches:
-            # Create new list of split points
-            new_splits = copy.deepcopy(split_points)
-            new_splits.append(start_pos + length)
+            for _, length in prefix_matches:
+                new_splits = copy.deepcopy(split_points)
+                new_splits.append(start_pos + length)
 
-            if start_pos + length < len(phrase):
-                # More text to process - add to stack
-                to_process.append((start_pos + length, new_splits))
-            else:
-                # No more text - we have a complete valid split
-                # Convert split points to actual phrase segments
-                segments = []
-                prev = 0
-                for pos in new_splits:
-                    segments.append(phrase[prev:pos])
-                    prev = pos
-                valid_splits.append(segments)
+                if start_pos + length < len(segment):
+                    to_process.append((start_pos + length, new_splits))
+                else:
+                    parts = []
+                    prev = 0
+                    for pos in new_splits:
+                        parts.append(segment[prev:pos])
+                        prev = pos
+                    segment_splits.append(parts)
 
-    return valid_splits
+        if not segment_splits:
+            return []
+
+        # Combine with existing results
+        new_result = []
+        for existing in result:
+            for split_option in segment_splits:
+                new_result.append(existing + split_option)
+        result = new_result
+
+    return result if result != [[]] else []

@@ -1,8 +1,9 @@
 import copy
 from pygtrie import CharTrie
 
+# List of valid Pinyin syllables
 # fmt: off
-_pylist = [
+_syllables = [
     'a', 'ai', 'an', 'ang', 'ao',
     'ba', 'bai', 'ban', 'bang', 'bao', 'bei', 'ben', 'beng',
     'bi', 'bian', 'biang', 'biao', 'bie', 'bin', 'bing', 'bo', 'bu',
@@ -55,40 +56,67 @@ _pylist = [
 ]
 # fmt: on
 
-_trie = None
+_trie: CharTrie | None = None
 
 
-def _init_trie():
+def _init_trie() -> None:
+    """Initialize the trie with pinyin syllables if not already initialized.
+
+    The trie is used for efficient prefix matching of pinyin syllables.
+    Each syllable is stored with its length as the value.
+    """
     global _trie
     if _trie is None:
         _trie = CharTrie()
-        for py in _pylist:
-            _trie[py] = len(py)
+        for syllable in _syllables:
+            _trie[syllable] = len(syllable)
 
 
-def split(phrase):
+def split(phrase: str) -> list[list[str]]:
+    """Split a pinyin phrase into all possible valid syllable combinations.
+
+    Args:
+        phrase: A string containing pinyin syllables without spaces
+
+    Returns:
+        A list of lists, where each inner list represents one possible
+        way to split the phrase into valid pinyin syllables
+    """
     _init_trie()
-    phrase_lc = phrase.lower()
-    split_list = []
-    results = []
+
+    # Convert input to lowercase for matching
+    phrase_lower = phrase.lower()
+
+    # Stack of (original, lowercase, accumulated_syllables) tuples to process
+    to_process = []
+    valid_splits = []
+
+    # Initialize processing with the full phrase
     if phrase:
-        split_list.append((phrase, phrase_lc, []))
-    while split_list:
-        pair = split_list.pop()
-        phrase = pair[0]
-        phrase_lc = pair[1]
-        words = pair[2]
-        matches = _trie.prefixes(phrase_lc)
-        for match in matches:
-            n = match[1]
-            # Get the word and convert to lowercase
-            word = phrase[:n].lower()
-            tail = phrase[n:]
-            tail_lc = phrase_lc[n:]
-            words_copy = copy.deepcopy(words)
-            words_copy.append(word)
-            if tail:
-                split_list.append((tail, tail_lc, words_copy))
+        to_process.append((phrase, phrase_lower, []))
+
+    while to_process:
+        # Get next phrase to process
+        current, current_lower, syllables = to_process.pop()
+
+        # Find all valid pinyin prefixes
+        prefix_matches = _trie.prefixes(current_lower)
+
+        for prefix, length in prefix_matches:
+            # Extract the matched prefix and remaining text
+            matched_syllable = current[:length].lower()
+            remaining_text = current[length:]
+            remaining_lower = current_lower[length:]
+
+            # Create new list of accumulated syllables
+            new_syllables = copy.deepcopy(syllables)
+            new_syllables.append(matched_syllable)
+
+            if remaining_text:
+                # More text to process - add to stack
+                to_process.append((remaining_text, remaining_lower, new_syllables))
             else:
-                results.append(words_copy)
-    return results
+                # No more text - we have a complete valid split
+                valid_splits.append(new_syllables)
+
+    return valid_splits

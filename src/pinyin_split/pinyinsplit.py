@@ -1,4 +1,5 @@
 import copy
+from typing import List
 from pygtrie import CharTrie
 
 # List of valid Pinyin syllables
@@ -102,7 +103,7 @@ _non_standard_syllables = [
 # fmt: on
 
 
-def split(phrase: str, include_nonstandard: bool = False) -> list[list[str]]:
+def split(phrase: str, include_nonstandard: bool = False) -> List[List[str]]:
     """Split a pinyin phrase into all possible valid syllable combinations.
 
     Args:

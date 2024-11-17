@@ -101,21 +101,6 @@ _non_standard_syllables = [
 ]
 # fmt: on
 
-_trie: CharTrie | None = None
-
-
-def _init_trie() -> None:
-    """Initialize the trie with pinyin syllables if not already initialized.
-
-    The trie is used for efficient prefix matching of pinyin syllables.
-    Each syllable is stored with its length as the value.
-    """
-    global _trie
-    if _trie is None:
-        _trie = CharTrie()
-        for syllable in _syllables:
-            _trie[syllable] = len(syllable)
-
 
 def split(phrase: str) -> list[list[str]]:
     """Split a pinyin phrase into all possible valid syllable combinations.
@@ -127,7 +112,10 @@ def split(phrase: str) -> list[list[str]]:
         A list of lists, where each inner list represents one possible
         way to split the phrase into valid pinyin syllables
     """
-    _init_trie()
+    # Create trie and populate with syllables
+    trie = CharTrie()
+    for syllable in _syllables:
+        trie[syllable] = len(syllable)
 
     # Convert input to lowercase for matching
     phrase_lower = phrase.lower()
@@ -145,7 +133,7 @@ def split(phrase: str) -> list[list[str]]:
         current, current_lower, syllables = to_process.pop()
 
         # Find all valid pinyin prefixes
-        prefix_matches = _trie.prefixes(current_lower)
+        prefix_matches = trie.prefixes(current_lower)
 
         for _, length in prefix_matches:
             # Extract the matched prefix and remaining text

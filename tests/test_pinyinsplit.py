@@ -4,9 +4,9 @@ from pinyin_split import split
 def test_basic_splits():
     """Test basic pinyin splitting cases"""
     assert split("mingzi") == [["ming", "zi"]]
-    assert split("zhongguo") == [
-        ["zhong", "guo"],
-        ["zhong", "gu", "o"],
+    assert split("Zhongguo") == [
+        ["Zhong", "guo"],
+        ["Zhong", "gu", "o"],
     ]  # Strangely correct behavior
 
 
@@ -24,11 +24,10 @@ def test_ambiguous_splits():
 
 
 def test_case_sensitivity():
-    """Test that splitting works regardless of case"""
-    # The current implementation ignores case
-    assert split("NIHAO") == [["ni", "hao"], ["ni", "ha", "o"]]
-    assert split("BeIJinG") == [["bei", "jing"]]
-    assert split("kaiche") == [["kai", "che"]]
+    """Test that splitting preserves original case"""
+    assert split("NIHaO") == [["NI", "HaO"], ["NI", "Ha", "O"]]
+    assert split("BeIJinG") == [["BeI", "JinG"]]
+    assert split("kaiCHE") == [["kai", "CHE"]]
 
 
 def test_edge_cases():
@@ -73,8 +72,8 @@ def test_rare_syllables():
     assert split("duang") == [["du", "ang"]]
 
     # Should match rare syllables when include_rare=True
-    assert split("zhei", include_non_standard=True) == [["zhei"]]
-    assert sorted(split("duang", include_non_standard=True)) == sorted(
+    assert split("zhei", include_nonstandard=True) == [["zhei"]]
+    assert sorted(split("duang", include_nonstandard=True)) == sorted(
         [["du", "ang"], ["duang"]]
     )
 

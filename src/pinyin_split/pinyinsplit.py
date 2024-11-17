@@ -102,12 +102,12 @@ _non_standard_syllables = [
 # fmt: on
 
 
-def split(phrase: str, include_non_standard: bool = False) -> list[list[str]]:
+def split(phrase: str, include_nonstandard: bool = False) -> list[list[str]]:
     """Split a pinyin phrase into all possible valid syllable combinations.
 
     Args:
         phrase: A string containing pinyin syllables without spaces
-        include_rare: Whether to include rare/non-standard syllables in matching
+        include_nonstandard: Whether to include nonstandard syllables in matching
 
     Returns:
         A list of lists, where each inner list represents one possible
@@ -118,43 +118,47 @@ def split(phrase: str, include_non_standard: bool = False) -> list[list[str]]:
     for syllable in _syllables:
         trie[syllable] = len(syllable)
 
-    if include_non_standard:
+    if include_nonstandard:
         for syllable in _non_standard_syllables:
             trie[syllable] = len(syllable)
 
     # Convert input to lowercase for matching
     phrase_lower = phrase.lower()
 
-    # Stack of (original, lowercase, accumulated_syllables) tuples to process
+    # Stack of (start_pos, accumulated_splits) tuples to process
     to_process = []
     valid_splits = []
 
-    # Initialize processing with the full phrase
+    # Initialize processing with starting position
     if phrase:
-        to_process.append((phrase, phrase_lower, []))
+        to_process.append((0, []))
 
     while to_process:
-        # Get next phrase to process
-        current, current_lower, syllables = to_process.pop()
+        # Get next position to process
+        start_pos, split_points = to_process.pop()
+
+        # Get remaining text to process
+        current_lower = phrase_lower[start_pos:]
 
         # Find all valid pinyin prefixes
         prefix_matches = trie.prefixes(current_lower)
 
         for _, length in prefix_matches:
-            # Extract the matched prefix and remaining text
-            matched_syllable = current[:length].lower()
-            remaining_text = current[length:]
-            remaining_lower = current_lower[length:]
+            # Create new list of split points
+            new_splits = copy.deepcopy(split_points)
+            new_splits.append(start_pos + length)
 
-            # Create new list of accumulated syllables
-            new_syllables = copy.deepcopy(syllables)
-            new_syllables.append(matched_syllable)
-
-            if remaining_text:
+            if start_pos + length < len(phrase):
                 # More text to process - add to stack
-                to_process.append((remaining_text, remaining_lower, new_syllables))
+                to_process.append((start_pos + length, new_splits))
             else:
                 # No more text - we have a complete valid split
-                valid_splits.append(new_syllables)
+                # Convert split points to actual phrase segments
+                segments = []
+                prev = 0
+                for pos in new_splits:
+                    segments.append(phrase[prev:pos])
+                    prev = pos
+                valid_splits.append(segments)
 
     return valid_splits

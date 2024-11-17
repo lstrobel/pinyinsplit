@@ -37,6 +37,9 @@ classifiers = [
 ]
 dependencies = ["pygtrie>=2.5.0"]
 
+[dependency-groups]
+dev = ["ruff>=0.7.4"]
+
 [project.urls]
 Documentation = "https://github.com/lstrobel/pinyin-split#readme"
 Issues = "https://github.com/lstrobel/pinyin-split/issues"

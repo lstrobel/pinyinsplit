@@ -1,4 +1,4 @@
 # SPDX-FileCopyrightText: 2024-present Lukas Strobel <mail@lstrobel.com>
 #
 # SPDX-License-Identifier: MIT
-__version__ = "0.1.3"
+__version__ = "0.2.0"

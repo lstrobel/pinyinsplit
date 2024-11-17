@@ -66,6 +66,19 @@ def test_special_syllables():
     assert sorted(split("nüe")) == sorted([["nüe"], ["nü", "e"]])
 
 
+def test_rare_syllables():
+    """Test rare/non-standard syllables with include_rare parameter"""
+    # Should not match rare syllables by default
+    assert split("zhei") == []
+    assert split("duang") == [["du", "ang"]]
+
+    # Should match rare syllables when include_rare=True
+    assert split("zhei", include_non_standard=True) == [["zhei"]]
+    assert sorted(split("duang", include_non_standard=True)) == sorted(
+        [["du", "ang"], ["duang"]]
+    )
+
+
 def test_overlapping_possibilities():
     """Test cases where syllables could overlap"""
     # The current implementation finds all valid splits

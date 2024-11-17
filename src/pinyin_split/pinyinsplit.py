@@ -102,11 +102,12 @@ _non_standard_syllables = [
 # fmt: on
 
 
-def split(phrase: str) -> list[list[str]]:
+def split(phrase: str, include_non_standard: bool = False) -> list[list[str]]:
     """Split a pinyin phrase into all possible valid syllable combinations.
 
     Args:
         phrase: A string containing pinyin syllables without spaces
+        include_rare: Whether to include rare/non-standard syllables in matching
 
     Returns:
         A list of lists, where each inner list represents one possible
@@ -116,6 +117,10 @@ def split(phrase: str) -> list[list[str]]:
     trie = CharTrie()
     for syllable in _syllables:
         trie[syllable] = len(syllable)
+
+    if include_non_standard:
+        for syllable in _non_standard_syllables:
+            trie[syllable] = len(syllable)
 
     # Convert input to lowercase for matching
     phrase_lower = phrase.lower()

@@ -7,7 +7,7 @@ Based originally on [pinyinsplit](https://github.com/throput/pinyinsplit) by [@t
 ## Installation
 
 ```bash
-pip install pinyin-split
+pip install py-pinyin-split
 ```
 
 ## Usage

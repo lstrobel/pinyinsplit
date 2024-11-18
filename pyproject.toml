@@ -8,7 +8,7 @@ packages = ["src/pinyin_split"]
 [project]
 name = "py-pinyin-split"
 dynamic = ["version"]
-description = ''
+description = 'Library for splitting Hanyu Pinyin phrases into all valid syllable combinations'
 readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"

@@ -55,3 +55,12 @@ def test_punctuation_and_numbers():
     assert split("bei3jing1") == [["bei", "jing"]]
     assert split("zhong1-guo2") == [["zhong", "guo"], ["zhong", "gu", "o"]]
     assert split("ni3,wo3") == [["ni", "wo"]]
+
+
+def test_erhua():
+    """Test handling of erhua"""
+    assert split("yidianr") == []  # Flag not enabled
+    assert split("yidianr", include_erhua=True) == [
+        ["yi", "dian", "r"],
+        ["yi", "di", "an", "r"],
+    ]

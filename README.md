@@ -58,6 +58,10 @@ split("duang")
 split("duang", include_nonstandard=True)
 [['duang'], ['du', 'ang']]
 
+# Enable erhua support
+split("yidianr", include_erhua=True) 
+[["yi", "dian", "r"], ["yi", "di", "an", "r"]]
+
 # Invalid input returns empty list
 split("xyz")
 []

@@ -142,7 +142,9 @@ def _add_tone_variants(syllable: str) -> list[str]:
     return variants
 
 
-def split(phrase: str, include_nonstandard: bool = False) -> List[List[str]]:
+def split(
+    phrase: str, include_nonstandard: bool = False, include_erhua=False
+) -> List[List[str]]:
     """Split a pinyin phrase into valid syllable combinations.
 
     Handles both toned and toneless pinyin input. Punctuation and numbers will not be
@@ -168,6 +170,10 @@ def split(phrase: str, include_nonstandard: bool = False) -> List[List[str]]:
         for syllable in _non_standard_syllables:
             for variant in _add_tone_variants(syllable):
                 trie[variant] = len(variant)
+
+    # Add erhua if requested
+    if include_erhua:
+        trie["r"] = 1
 
     # Find positions of punctuation and numbers
     boundaries = []

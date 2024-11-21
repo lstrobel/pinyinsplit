@@ -1,4 +1,5 @@
 import copy
+from functools import lru_cache
 from typing import List
 from pygtrie import CharTrie
 
@@ -142,6 +143,31 @@ def _add_tone_variants(syllable: str) -> list[str]:
     return variants
 
 
+@lru_cache(maxsize=4)  # Only 4 possible combinations of the boolean parameters
+def _get_trie(
+    include_nonstandard: bool = False, include_erhua: bool = False
+) -> CharTrie:
+    """Get a CharTrie for the specified configuration, using cache if available."""
+    trie = CharTrie()
+
+    # Add standard syllables
+    for syllable in _syllables:
+        for variant in _add_tone_variants(syllable):
+            trie[variant] = len(variant)
+
+    # Add non-standard syllables if requested
+    if include_nonstandard:
+        for syllable in _non_standard_syllables:
+            for variant in _add_tone_variants(syllable):
+                trie[variant] = len(variant)
+
+    # Add erhua if requested
+    if include_erhua:
+        trie["r"] = 1
+
+    return trie
+
+
 def split(
     phrase: str, include_nonstandard: bool = False, include_erhua=False
 ) -> List[List[str]]:
@@ -158,22 +184,7 @@ def split(
         A list of lists, where each inner list represents one possible
         way to split the phrase into valid pinyin syllables
     """
-    trie = CharTrie()
-
-    # Add standard syllables and their tone variants
-    for syllable in _syllables:
-        for variant in _add_tone_variants(syllable):
-            trie[variant] = len(variant)
-
-    # Add non-standard syllables if requested
-    if include_nonstandard:
-        for syllable in _non_standard_syllables:
-            for variant in _add_tone_variants(syllable):
-                trie[variant] = len(variant)
-
-    # Add erhua if requested
-    if include_erhua:
-        trie["r"] = 1
+    trie = _get_trie(include_nonstandard, include_erhua)
 
     # Find positions of punctuation and numbers
     boundaries = []

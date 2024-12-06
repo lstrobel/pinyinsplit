@@ -1,6 +1,7 @@
 # py-pinyin-split
 
-A Python library for splitting Hanyu Pinyin phrases into all possible valid syllable combinations. The library supports standard syllables defined in the [Pinyin Table](https://en.wikipedia.org/wiki/Pinyin_table), handles tone marks, and optionally includes non-standard syllables.
+A Python library for splitting Hanyu Pinyin words into syllables. Built on [NLTK's](https://github.com/nltk/nltk) [tokenizer interface](https://www.nltk.org/api/nltk.tokenize.html), it handles standard syllables defined in the [Pinyin Table](https://en.wikipedia.org/wiki/Pinyin_table) and supports tone marks.
+
 
 Based originally on [pinyinsplit](https://github.com/throput/pinyinsplit) by [@tomlee](https://github.com/tomlee).
 
@@ -14,59 +15,36 @@ pip install py-pinyin-split
 
 ## Usage
 
+Instantiate a tokenizer and split away.
+
+ The tokenizer expects a clean Hanyu Pinyin word as input - you'll need to preprocess text to:
+- Remove punctuation and whitespace
+- Convert numeric tones (pin1yin1) to tone marks (pīnyīn)
+- Handle sentence boundaries
+
+The tokenizer uses syllable frequency data to resolve ambiguous splits. It currently does not support apostrophes (sorry!) (e.g. "xi'an" will throw an error)
+
+
 ```python
-from pinyin_split import split
+from pinyin_split import PinyinTokenizer
 
-# Basic splitting - the below is a valid split. Consider filtering by number of syllables if you want to avoid the unlikely second output
-split("nihao")
-[['ni', 'hao'], ['ni', 'ha', 'o']]
+tokenizer = PinyinTokenizer()
 
-# Tone marks are fully supported
-split("nǐhǎo")
-[['nǐ', 'hǎo'], ['nǐ', 'hǎ', 'o']]
+# Basic splitting
+tokenizer.tokenize("nǐhǎo")  # ['nǐ', 'hǎo']
+tokenizer.tokenize("Běijīng")  # ['Běi', 'jīng']
 
-split("Běijīng")
-[['Běi', 'jīng']]
+# Handles ambiguous splits using frequency data
+tokenizer.tokenize("xian")  # ['xian'] not ['xi', 'an']
+tokenizer.tokenize("wanan")  # ['wan', 'an'] not ['wa', 'nan']
 
-# Case preservation
-split("BeijingDaxue")
-[['Bei', 'jing', 'Da', 'xue'], ['Bei', 'jing', 'Da', 'xu', 'e']]
+# Tone marks help resolve ambiguity
+tokenizer.tokenize("xīān")  # ['xī', 'ān']
+tokenizer.tokenize("xián")  # ['xián']
 
-# Multiple valid splits
-split("xian")  # Could be 先 or 西安
-[['xian'], ['xi', 'an']]
-
-# Punctuation and numbers are handled as boundaries
-split("xi'an")
-[['xi', 'an']]
-
-split("bei3jing1")
-[['bei', 'jing']]
-
-# Complex phrases
-split("Jiéguǒtāmenyíngle")
-[
-    ['Jié', 'guǒ', 'tā', 'men', 'yíng', 'le'],
-    ['Jié', 'gu', 'ǒ', 'tā', 'men', 'yíng', 'le'],
-    ['Ji', 'é', 'guǒ', 'tā', 'men', 'yíng', 'le'],
-    ['Ji', 'é', 'gu', 'ǒ', 'tā', 'men', 'yíng', 'le']
-]
-
-# Non-standard syllables (disabled by default)
-split("duang")
-[['du', 'ang']]
-
-# Enable non-standard syllables
-split("duang", include_nonstandard=True)
-[['duang'], ['du', 'ang']]
-
-# Enable erhua support
-split("yidianr", include_erhua=True) 
-[["yi", "dian", "r"], ["yi", "di", "an", "r"]]
-
-# Invalid input returns empty list
-split("xyz")
-[]
+# Optional support for non-standard syllables
+tokenizer = PinyinTokenizer(include_nonstandard=True)
+tokenizer.tokenize("duang")  # ['duang']
 ```
 
 ## Related Projects

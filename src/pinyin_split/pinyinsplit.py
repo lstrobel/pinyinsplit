@@ -1,4 +1,5 @@
 import re
+import string
 from typing import Iterator, List, Tuple
 from nltk.tokenize.api import TokenizerI
 from pygtrie import CharTrie
@@ -532,12 +533,15 @@ class PinyinTokenizer(TokenizerI):
         "zuo": "893830",
     }
 
-    # Build allowed characters pattern from vowel variants
-    _ALLOWED_CHARS = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-    _VOWEL_CHARS = {
-        tone_char for variants in VOWEL_TONE_VARIANTS.values() for tone_char in variants
-    }
-    _ALLOWED_CHARS.update(_VOWEL_CHARS)
+    # Build allowed characters pattern
+    # TODO: Handle this more gracefully
+    _ALLOWED_CHARS = set(string.ascii_letters)
+    for vowel, variants in VOWEL_TONE_VARIANTS.items():
+        _ALLOWED_CHARS.update(vowel)  # Add lowercase
+        _ALLOWED_CHARS.update(vowel.upper())  # Add uppercase
+        for tone_char in variants:
+            _ALLOWED_CHARS.update(tone_char)
+            _ALLOWED_CHARS.update(tone_char.upper())
 
     # Compile regex pattern for invalid character detection once at module level
     VALID_CHARS_PATTERN = re.compile(f"[^{''.join(sorted(_ALLOWED_CHARS))}]")

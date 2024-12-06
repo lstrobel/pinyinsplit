@@ -41,9 +41,9 @@ dependencies = ["pygtrie>=2.5.0"]
 dev = ["ruff>=0.7.4"]
 
 [project.urls]
-Documentation = "https://github.com/lstrobel/pinyin-split#readme"
-Issues = "https://github.com/lstrobel/pinyin-split/issues"
-Source = "https://github.com/lstrobel/pinyin-split"
+Documentation = "https://github.com/lstrobel/pinyinsplit#readme"
+Issues = "https://github.com/lstrobel/pinyinsplit/issues"
+Source = "https://github.com/lstrobel/pinyinsplit"
 
 [tool.hatch.version]
 path = "src/pinyin_split/__about__.py"

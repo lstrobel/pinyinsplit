@@ -1,8 +1,10 @@
-# pinyin-split
+# py-pinyin-split
 
 A Python library for splitting Hanyu Pinyin phrases into all possible valid syllable combinations. The library supports standard syllables defined in the [Pinyin Table](https://en.wikipedia.org/wiki/Pinyin_table), handles tone marks, and optionally includes non-standard syllables.
 
 Based originally on [pinyinsplit](https://github.com/throput/pinyinsplit) by [@tomlee](https://github.com/tomlee).
+
+PyPI: https://pypi.org/project/py-pinyin-split/
 
 ## Installation
 
@@ -66,3 +68,8 @@ split("yidianr", include_erhua=True)
 split("xyz")
 []
 ```
+
+## Related Projects
+- https://pypi.org/project/pinyintokenizer/
+- https://pypi.org/project/pypinyin/
+- https://github.com/throput/pinyinsplit

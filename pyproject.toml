@@ -45,9 +45,9 @@ dev = [
 ]
 
 [project.urls]
-Documentation = "https://github.com/lstrobel/pinyinsplit#readme"
-Issues = "https://github.com/lstrobel/pinyinsplit/issues"
-Source = "https://github.com/lstrobel/pinyinsplit"
+Documentation = "https://github.com/lstrobel/py-pinyin-split#readme"
+Issues = "https://github.com/lstrobel/py-pinyin-split/issues"
+Source = "https://github.com/lstrobel/py-pinyin-split"
 
 
 [tool.ruff.format]

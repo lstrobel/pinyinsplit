@@ -5,17 +5,19 @@
 import re
 import string
 from typing import Iterator, List, Tuple
+
 from nltk.tokenize.api import TokenizerI  # type: ignore
 from pygtrie import CharTrie  # type: ignore
 
 
 class PinyinTokenizer(TokenizerI):
     """
-    Splits Hanyu Pinyin words on syllable boundaries. Cannot handle punctuation or whitespace.
+    Splits Hanyu Pinyin words on syllable boundaries.
+    Cannot handle punctuation or whitespace.
 
     Args:
-        include_nonstandard: If True, includes rare/non-standard syllables in the valid set.
-            Defaults to False.
+        include_nonstandard: If True, includes rare/non-standard syllables in the valid
+            set. Defaults to False.
 
     Example:
         >>> tokenizer = PinyinTokenizer()
@@ -87,7 +89,7 @@ class PinyinTokenizer(TokenizerI):
         'chi', 'cha', 'che', 'chai', 'chao', 'chou', 'chan', 'chen', 'chang', 'cheng',
         'chu', 'chua', 'chuo', 'chuai', 'chui', 'chuan', 'chun', 'chuang', 'chong',
 
-        'shi', 'sha', 'she', 'shai', 'shei', 'shao', 'shou', 'shan', 'shen', 'shang', 'sheng',
+        'shi', 'sha', 'she', 'shai', 'shei', 'shao', 'shou', 'shan', 'shen', 'shang', 'sheng',  # noqa: E501
         'shu', 'shua', 'shuo', 'shuai', 'shui', 'shuan', 'shun', 'shuang',
 
         'r', # Include to cover erhua
@@ -551,7 +553,9 @@ class PinyinTokenizer(TokenizerI):
     VALID_CHARS_PATTERN = re.compile(f"[^{''.join(sorted(_ALLOWED_CHARS))}]")
 
     def _get_tone_variants(self, syllable: str):
-        """Generate all valid tone variants for a syllable. Assumes syllabe is lowercase"""
+        """
+        Generate all valid tone variants for a syllable. Assumes syllabe is lowercase
+        """
         variants = [syllable]  # Include toneless variation
 
         # Find the vowels in the syllable (both upper and lower case)
@@ -569,7 +573,8 @@ class PinyinTokenizer(TokenizerI):
         elif any(v == "o" for v in vowels):
             tone_vowel = next(v for v in vowels if v == "o")
         else:
-            # If there is no a e or o, the vowels are either 'iu', 'ui', or 'ê', in which case the mark goes on the last vowel
+            # If there is no a e or o, the vowels are either 'iu', 'ui', or 'ê',
+            # in which case the mark goes on the last vowel
             tone_vowel = vowels[-1]
 
         # Generate variants with each tone mark
@@ -618,7 +623,8 @@ class PinyinTokenizer(TokenizerI):
                 new_splits.append(start_pos + length)
 
                 if start_pos + length < len(s):
-                    # If we haven't reached the end, continue processing from end of this syllable
+                    # If we haven't reached the end,
+                    # continue processing from end of this syllable
                     to_process.append((start_pos + length, new_splits))
                 else:
                     # We've reached the end - construct the output span tuples
@@ -657,8 +663,7 @@ class PinyinTokenizer(TokenizerI):
         else:
             spans = shortest[0]
 
-        for span in spans:
-            yield span
+        yield from spans
 
     def tokenize(self, s: str) -> List[str]:
         return [s[start:end] for start, end in self.span_tokenize(s)]

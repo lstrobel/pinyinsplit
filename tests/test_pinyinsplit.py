@@ -1,4 +1,5 @@
-import pytest  # type: ignore
+import pytest
+
 from py_pinyin_split import PinyinTokenizer
 
 

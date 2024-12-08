@@ -3,6 +3,12 @@ import pytest
 from py_pinyin_split import PinyinTokenizer
 
 
+def test_benchmark_simple(benchmark):
+    tokenizer = PinyinTokenizer()
+    result = benchmark(tokenizer.tokenize, "xīnniánkuàilè")
+    assert result == ["xīn", "nián", "kuài", "lè"]
+
+
 def test_no_tone_splits():
     """We can split pinyin without tones"""
     tokenizer = PinyinTokenizer()

@@ -20,6 +20,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+.benchmarks/
 
 # Virtual environments
 .venv

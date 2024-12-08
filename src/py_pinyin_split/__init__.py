@@ -6,8 +6,8 @@ import re
 import string
 from typing import Iterator, List, Tuple
 
+import marisa_trie  # type: ignore
 from nltk.tokenize.api import TokenizerI  # type: ignore
-from pygtrie import CharTrie  # type: ignore
 
 
 class PinyinTokenizer(TokenizerI):
@@ -587,17 +587,19 @@ class PinyinTokenizer(TokenizerI):
         return variants
 
     def __init__(self, include_nonstandard=False):
-        self.trie = CharTrie()
-        # Add standard syllables
+        trie_contents = []
 
+        # Add standard syllables
         for syllable in self.STANDARD_SYLLABLES:
             for variant in self._get_tone_variants(syllable):
-                self.trie[variant] = len(variant)
+                trie_contents.append(variant)
 
         if include_nonstandard:
             for syllable in self.NON_STANDARD_SYLLABLES:
                 for variant in self._get_tone_variants(syllable):
-                    self.trie[variant] = len(variant)
+                    trie_contents.append(variant)
+
+        self.trie = marisa_trie.Trie(trie_contents)
 
     def span_tokenize(self, s: str) -> Iterator[Tuple[int, int]]:
         # Check for any invalid characters
@@ -617,15 +619,15 @@ class PinyinTokenizer(TokenizerI):
             prefix_matches = self.trie.prefixes(remaining_s)
 
             # For each possible syllable length
-            for _, length in prefix_matches:
+            for match in prefix_matches:
                 # Create a new split point list with this syllable's endpoint
                 new_splits = split_indices.copy()
-                new_splits.append(start_pos + length)
+                new_splits.append(start_pos + len(match))
 
-                if start_pos + length < len(s):
+                if start_pos + len(match) < len(s):
                     # If we haven't reached the end,
                     # continue processing from end of this syllable
-                    to_process.append((start_pos + length, new_splits))
+                    to_process.append((start_pos + len(match), new_splits))
                 else:
                     # We've reached the end - construct the output span tuples
                     spans = []

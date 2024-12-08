@@ -34,10 +34,15 @@ classifiers = [
     'Topic :: Text Processing :: Linguistic',
     'Topic :: Utilities',
 ]
-dependencies = ["nltk==3.9.1", "pygtrie>=2.5.0"]
+dependencies = ["marisa-trie>=1.2.1", "nltk==3.9.1"]
 
 [dependency-groups]
-dev = ["mypy>=1.13.0", "pytest>=8.3.4", "ruff>=0.7.4"]
+dev = [
+    "mypy>=1.13.0",
+    "pytest-benchmark>=4.0.0",
+    "pytest>=8.3.4",
+    "ruff>=0.7.4",
+]
 
 [project.urls]
 Documentation = "https://github.com/lstrobel/pinyinsplit#readme"

@@ -22,7 +22,7 @@ The tokenizer can handle standard Hanyu Pinyin with whitespaces and punctuation.
 The tokenizer uses syllable frequency data to resolve ambiguous splits.
 
 ```python
-from pinyin_split import PinyinTokenizer
+from py_pinyin_split import PinyinTokenizer
 
 tokenizer = PinyinTokenizer()
 

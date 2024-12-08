@@ -2,8 +2,8 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/pinyin_split"]
+[tool.hatch.version]
+path = "src/py_pinyin_split/__about__.py"
 
 [project]
 name = "py-pinyin-split"
@@ -37,30 +37,13 @@ classifiers = [
 dependencies = ["nltk==3.9.1", "pygtrie>=2.5.0"]
 
 [dependency-groups]
-dev = ["ruff>=0.7.4"]
+dev = [
+    "mypy>=1.13.0",
+    "pytest>=8.3.4",
+    "ruff>=0.7.4",
+]
 
 [project.urls]
 Documentation = "https://github.com/lstrobel/pinyinsplit#readme"
 Issues = "https://github.com/lstrobel/pinyinsplit/issues"
 Source = "https://github.com/lstrobel/pinyinsplit"
-
-[tool.hatch.version]
-path = "src/pinyin_split/__about__.py"
-
-[tool.hatch.envs.types]
-extra-dependencies = ["mypy>=1.0.0"]
-[tool.hatch.envs.types.scripts]
-check = "mypy --install-types --non-interactive {args:src/pinyin_split tests}"
-
-[tool.coverage.run]
-source_pkgs = ["pinyin_split", "tests"]
-branch = true
-parallel = true
-omit = ["src/pinyin_split/__about__.py"]
-
-[tool.coverage.paths]
-pinyin_split = ["src/pinyin_split", "*/pinyin-split/src/pinyin_split"]
-tests = ["tests", "*/pinyin-split/tests"]
-
-[tool.coverage.report]
-exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]

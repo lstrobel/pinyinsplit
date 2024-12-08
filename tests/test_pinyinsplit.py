@@ -1,5 +1,5 @@
 import pytest  # type: ignore
-from pinyin_split.pinyinsplit import PinyinTokenizer
+from py_pinyin_split import PinyinTokenizer
 
 
 def test_no_tone_splits():

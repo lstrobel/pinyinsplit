@@ -1,8 +1,12 @@
+# SPDX-FileCopyrightText: 2024-present Lukas Strobel <mail@lstrobel.com>
+#
+# SPDX-License-Identifier: MIT
+
 import re
 import string
 from typing import Iterator, List, Tuple
-from nltk.tokenize.api import TokenizerI
-from pygtrie import CharTrie
+from nltk.tokenize.api import TokenizerI  # type: ignore
+from pygtrie import CharTrie  # type: ignore
 
 
 class PinyinTokenizer(TokenizerI):
@@ -598,7 +602,7 @@ class PinyinTokenizer(TokenizerI):
         candidates = []
 
         # Generate all possible splits starting from the beginning
-        to_process = [(0, [])]
+        to_process: List[Tuple[int, List[int]]] = [(0, [])]
         while to_process:
             # Get next position and accumulated split indices to process
             start_pos, split_indices = to_process.pop()
@@ -648,6 +652,7 @@ class PinyinTokenizer(TokenizerI):
                     max_freq = total_freq
                     best_split = split
 
+            assert best_split is not None
             spans = best_split
         else:
             spans = shortest[0]

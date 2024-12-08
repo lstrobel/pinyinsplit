@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: MIT
 
 import re
-import string
 from typing import Iterator, List, Tuple
 
 import marisa_trie  # type: ignore
+from nltk.tokenize import WordPunctTokenizer  # type: ignore
 from nltk.tokenize.api import TokenizerI  # type: ignore
 
 
@@ -539,18 +539,7 @@ class PinyinTokenizer(TokenizerI):
         "zuo": "893830",
     }
 
-    # Build allowed characters pattern
-    # TODO: Handle this more gracefully
-    _ALLOWED_CHARS = set(string.ascii_letters)
-    for vowel, variants in VOWEL_TONE_VARIANTS.items():
-        _ALLOWED_CHARS.update(vowel)  # Add lowercase
-        _ALLOWED_CHARS.update(vowel.upper())  # Add uppercase
-        for tone_char in variants:
-            _ALLOWED_CHARS.update(tone_char)
-            _ALLOWED_CHARS.update(tone_char.upper())
-
-    # Compile regex pattern for invalid character detection once at module level
-    VALID_CHARS_PATTERN = re.compile(f"[^{''.join(sorted(_ALLOWED_CHARS))}]")
+    NON_ALPHABETIC_REGEX = re.compile(r"[^\w\s]+")
 
     def _get_tone_variants(self, syllable: str):
         """
@@ -587,6 +576,8 @@ class PinyinTokenizer(TokenizerI):
         return variants
 
     def __init__(self, include_nonstandard=False):
+        self.preprocess_tokenizer = WordPunctTokenizer()
+
         trie_contents = []
 
         # Add standard syllables
@@ -601,11 +592,11 @@ class PinyinTokenizer(TokenizerI):
 
         self.trie = marisa_trie.Trie(trie_contents)
 
-    def span_tokenize(self, s: str) -> Iterator[Tuple[int, int]]:
-        # Check for any invalid characters
-        if self.VALID_CHARS_PATTERN.search(s):
-            raise ValueError("Input string can only contain letters and tone marks")
-
+    def _get_string_possibilites(self, s) -> List[List[Tuple[int, int]]]:
+        """
+        For a given string, return all possible valid syllable spans of that string,
+        indexed local to the string
+        """
         candidates = []
 
         # Generate all possible splits starting from the beginning
@@ -637,35 +628,55 @@ class PinyinTokenizer(TokenizerI):
                         prev = pos
                     candidates.append(spans)
 
-        if not candidates:
-            raise ValueError(f"No valid pinyin syllable splits found for '{s}'")
+        return candidates
 
-        # Find the shortest candidate(s) by comparing total number of splits
-        min_length = min(len(splits) for splits in candidates)
-        shortest = [c for c in candidates if len(c) == min_length]
+    def span_tokenize(self, s: str) -> Iterator[Tuple[int, int]]:
+        # Start by splitting into sub-spans to examine
+        starting_spans = self.preprocess_tokenizer.span_tokenize(s)
 
-        if len(shortest) > 1:
-            # Use syllable frequencies as tiebreaker
-            max_freq = float("-inf")
-            best_split = None
+        final_spans = []
+        for start, end in starting_spans:
+            subspan_possibilities = self._get_string_possibilites(s[start:end])
+            if not subspan_possibilities:
+                # We were passed a subspan that wasnt valid pinyin
+                # If it is a non-alphabetic span, then we return as-is
+                if self.NON_ALPHABETIC_REGEX.match(s[start:end]):
+                    final_spans.append((start, end))
+                    continue
+                else:
+                    raise ValueError(f"Invalid pinyin at substring: {s[start:end]}")
 
-            for split in shortest:
-                # Get syllables without tones and sum their frequencies
-                syllables = [s[start:end].lower() for start, end in split]
-                total_freq = sum(
-                    int(self.SYLLABLE_FREQUENCIES.get(syl, "0")) for syl in syllables
-                )
+            # Find the shortest candidate(s) for this span
+            min_length = min(len(splits) for splits in subspan_possibilities)
+            shortest = [c for c in subspan_possibilities if len(c) == min_length]
 
-                if total_freq > max_freq:
-                    max_freq = total_freq
-                    best_split = split
+            if len(shortest) > 1:
+                # Use syllable frequencies as tiebreaker
+                max_freq = float("-inf")
+                best_split = None
 
-            assert best_split is not None
-            spans = best_split
-        else:
-            spans = shortest[0]
+                for split in shortest:
+                    # Get syllables without tones and sum their frequencies
+                    syllables = [s[start:end].lower() for start, end in split]
+                    total_freq = sum(
+                        int(self.SYLLABLE_FREQUENCIES.get(syl, "0"))
+                        for syl in syllables
+                    )
 
-        yield from spans
+                    if total_freq > max_freq:
+                        max_freq = total_freq
+                        best_split = split
+
+                assert best_split is not None
+                chosen = best_split
+            else:
+                chosen = shortest[0]
+
+            for subspan in chosen:
+                # Convert from local span indices to full string indices
+                final_spans.append((start + subspan[0], start + subspan[1]))
+
+        yield from final_spans
 
     def tokenize(self, s: str) -> List[str]:
         return [s[start:end] for start, end in self.span_tokenize(s)]

@@ -17,13 +17,9 @@ pip install py-pinyin-split
 
 Instantiate a tokenizer and split away.
 
- The tokenizer expects a clean Hanyu Pinyin word as input - you'll need to preprocess text to:
-- Remove punctuation and whitespace
-- Convert numeric tones (pin1yin1) to tone marks (pīnyīn)
-- Handle sentence boundaries
+The tokenizer can handle standard Hanyu Pinyin with whitespaces and punctuation. However, invalid pinyin syllables will raise a `ValueError`
 
-The tokenizer uses syllable frequency data to resolve ambiguous splits. It currently does not support apostrophes (sorry!) (e.g. "xi'an" will throw an error)
-
+The tokenizer uses syllable frequency data to resolve ambiguous splits.
 
 ```python
 from pinyin_split import PinyinTokenizer
@@ -34,13 +30,21 @@ tokenizer = PinyinTokenizer()
 tokenizer.tokenize("nǐhǎo")  # ['nǐ', 'hǎo']
 tokenizer.tokenize("Běijīng")  # ['Běi', 'jīng']
 
+# Handles whitespace and punctuation
+tokenizer.tokenize("Nǐ hǎo ma?")  # ['Nǐ', 'hǎo', 'ma', '?']
+tokenizer.tokenize("Wǒ hěn hǎo!")  # ['Wǒ', 'hěn', 'hǎo', '!']
+
 # Handles ambiguous splits using frequency data
 tokenizer.tokenize("xian")  # ['xian'] not ['xi', 'an']
 tokenizer.tokenize("wanan")  # ['wan', 'an'] not ['wa', 'nan']
 
-# Tone marks help resolve ambiguity
+# Tone marks or punctuation help resolve ambiguity
 tokenizer.tokenize("xīān")  # ['xī', 'ān']
 tokenizer.tokenize("xián")  # ['xián']
+tokenizer.tokenize("Xī'ān") # ["Xī", "'", "ān"]
+
+# Raises ValueError for invalid pinyin
+tokenizer.tokenize("hello")  # ValueError
 
 # Optional support for non-standard syllables
 tokenizer = PinyinTokenizer(include_nonstandard=True)

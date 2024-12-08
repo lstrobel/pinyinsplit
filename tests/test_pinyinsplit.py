@@ -29,17 +29,9 @@ def test_tone_splits():
     assert tokenizer.tokenize("màn") == ["màn"]
 
 
-def test_edge_cases():
-    """Test edge cases and invalid inputs"""
+def test_invalid_pinyin():
+    """Inputs with invalid pinyin throw ValueErrors"""
     tokenizer = PinyinTokenizer()
-
-    # Empty string should raise ValueError
-    with pytest.raises(ValueError):
-        tokenizer.tokenize("")
-
-    # Invalid characters should raise ValueError
-    with pytest.raises(ValueError):
-        tokenizer.tokenize("hello!")
 
     # Single consonant should raise ValueError
     with pytest.raises(ValueError):
@@ -52,6 +44,30 @@ def test_edge_cases():
     # Unsupported pinyin should raise ValueError
     with pytest.raises(ValueError):
         tokenizer.tokenize("ni3hao3")
+
+
+def test_text_with_whitespace():
+    """Test handling of longer text with whitespace"""
+    tokenizer = PinyinTokenizer()
+
+    # Simple whitespace
+    assert tokenizer.tokenize("nǐ hǎo") == ["nǐ", "hǎo"]
+
+    # Multiple words with mixed tones
+    assert tokenizer.tokenize("Wǒ hěn xǐhuān Zhōngguó") == [
+        "Wǒ",
+        "hěn",
+        "xǐ",
+        "huān",
+        "Zhōng",
+        "guó",
+    ]
+
+    # Leading/trailing whitespace
+    assert tokenizer.tokenize("  nǐ hǎo  ") == ["nǐ", "hǎo"]
+
+    # Multiple whitespace characters
+    assert tokenizer.tokenize("nǐ  hǎo\t\nma") == ["nǐ", "hǎo", "ma"]
 
 
 def test_nonstandard_syllables():
@@ -115,3 +131,8 @@ def test_ambiguous_splits():
     # Test that tones help resolve ambiguity
     assert tokenizer.tokenize("xīan") == ["xī", "an"]
     assert tokenizer.tokenize("xián") == ["xián"]
+
+    # Test apostrophe handling
+    assert tokenizer.tokenize("Xī'ān") == ["Xī", "'", "ān"]
+    assert tokenizer.tokenize("yī'er") == ["yī", "'", "er"]
+    assert tokenizer.tokenize("tián'é") == ["tián", "'", "é"]

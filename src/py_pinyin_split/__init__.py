@@ -575,6 +575,14 @@ class PinyinTokenizer(TokenizerI):
 
         return variants
 
+    def _remove_tone(self, syllable: str):
+        """Remove tone marks from a pinyin syllable, returning the base form."""
+        result = syllable
+        for base_vowel, toned_vowels in self.VOWEL_TONE_VARIANTS.items():
+            for toned in toned_vowels:
+                result = result.replace(toned, base_vowel)
+        return result
+
     def __init__(self, include_nonstandard=False):
         self.preprocess_tokenizer = WordPunctTokenizer()
 
@@ -656,8 +664,11 @@ class PinyinTokenizer(TokenizerI):
                 best_split = None
 
                 for split in shortest:
-                    # Get syllables without tones and sum their frequencies
-                    syllables = [s[start:end].lower() for start, end in split]
+                    # Get syllables and remove tones before frequency lookup
+                    syllables = [
+                        self._remove_tone(s[start:end].lower()) for start, end in split
+                    ]
+
                     total_freq = sum(
                         int(self.SYLLABLE_FREQUENCIES.get(syl, "0"))
                         for syl in syllables

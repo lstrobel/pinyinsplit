@@ -29,6 +29,11 @@ def test_tone_splits():
     assert tokenizer.tokenize("màn") == ["màn"]
 
 
+def test_tone_split_where_frequency_matters():
+    tokenizer = PinyinTokenizer()
+    assert tokenizer.tokenize("kěnéng") == ["kě", "néng"]
+
+
 def test_invalid_pinyin():
     """Inputs with invalid pinyin throw ValueErrors"""
     tokenizer = PinyinTokenizer()

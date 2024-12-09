@@ -658,28 +658,44 @@ class PinyinTokenizer(TokenizerI):
             min_length = min(len(splits) for splits in subspan_possibilities)
             shortest = [c for c in subspan_possibilities if len(c) == min_length]
 
-            if len(shortest) > 1:
-                # Use syllable frequencies as tiebreaker
-                max_freq = float("-inf")
-                best_split = None
+            if len(shortest) > 1:  # We need to break a tie
+                # First prefer splits with fewer syllables starting with vowels
+                min_vowel_starts = float("inf")
+                fewest_vowels = []
 
                 for split in shortest:
-                    # Get syllables and remove tones before frequency lookup
                     syllables = [
                         self._remove_tone(s[start:end].lower()) for start, end in split
                     ]
-
-                    total_freq = sum(
-                        int(self.SYLLABLE_FREQUENCIES.get(syl, "0"))
-                        for syl in syllables
+                    vowel_starts = sum(
+                        1 for syl in syllables if syl[0] in self.VOWEL_TONE_VARIANTS
                     )
 
-                    if total_freq > max_freq:
-                        max_freq = total_freq
-                        best_split = split
+                    if vowel_starts < min_vowel_starts:
+                        min_vowel_starts = vowel_starts
+                        fewest_vowels = [split]
+                    elif vowel_starts == min_vowel_starts:
+                        fewest_vowels.append(split)
 
-                assert best_split is not None
-                chosen = best_split
+                if len(fewest_vowels) > 1:
+                    # Use syllable frequencies as final tiebreaker
+                    max_freq = float("-inf")
+                    best_split = None
+
+                    for split in fewest_vowels:
+                        total_freq = sum(
+                            int(self.SYLLABLE_FREQUENCIES.get(syl, "0"))
+                            for syl in syllables
+                        )
+
+                        if total_freq > max_freq:
+                            max_freq = total_freq
+                            best_split = split
+
+                    assert best_split is not None
+                    chosen = best_split
+                else:
+                    chosen = fewest_vowels[0]
             else:
                 chosen = shortest[0]
 

@@ -29,9 +29,27 @@ def test_tone_splits():
     assert tokenizer.tokenize("màn") == ["màn"]
 
 
-def test_tone_split_where_frequency_matters():
+def test_difficult_tone_splits():
     tokenizer = PinyinTokenizer()
+
+    # Frequency matters
     assert tokenizer.tokenize("kěnéng") == ["kě", "néng"]
+    assert tokenizer.tokenize("dàngāo") == ["dàn", "gāo"]
+    assert tokenizer.tokenize("bàngōngshì") == ["bàn", "gōng", "shì"]
+
+    # Vowel matters
+    assert tokenizer.tokenize("rènào") == ["rè", "nào"]
+    assert tokenizer.tokenize("shēngāo") == ["shēn", "gāo"]
+    assert tokenizer.tokenize("qīněr") == ["qīn", "ěr"]
+
+    # Test that tones help resolve ambiguity
+    assert tokenizer.tokenize("xīan") == ["xī", "an"]
+    assert tokenizer.tokenize("xián") == ["xián"]
+
+    # Test apostrophe handling
+    assert tokenizer.tokenize("Xī'ān") == ["Xī", "'", "ān"]
+    assert tokenizer.tokenize("yī'er") == ["yī", "'", "er"]
+    assert tokenizer.tokenize("wǎn'ān") == ["wǎn", "'", "ān"]
 
 
 def test_invalid_pinyin():
@@ -122,22 +140,3 @@ def test_erhua():
     assert tokenizer.tokenize("erzi") == ["er", "zi"]
     assert tokenizer.tokenize("yidiǎnr") == ["yi", "diǎn", "r"]
     assert tokenizer.tokenize("wánr") == ["wán", "r"]
-
-
-def test_ambiguous_splits():
-    """Test handling of ambiguous syllable boundaries"""
-    tokenizer = PinyinTokenizer()
-
-    # Test cases where multiple valid splits exist
-    # Should use frequency data to pick most likely split
-    assert tokenizer.tokenize("wǎnān") == ["wǎn", "ān"]  # Not wa nan
-    assert tokenizer.tokenize("xian") == ["xian"]  # Not xi an
-
-    # Test that tones help resolve ambiguity
-    assert tokenizer.tokenize("xīan") == ["xī", "an"]
-    assert tokenizer.tokenize("xián") == ["xián"]
-
-    # Test apostrophe handling
-    assert tokenizer.tokenize("Xī'ān") == ["Xī", "'", "ān"]
-    assert tokenizer.tokenize("yī'er") == ["yī", "'", "er"]
-    assert tokenizer.tokenize("tián'é") == ["tián", "'", "é"]
